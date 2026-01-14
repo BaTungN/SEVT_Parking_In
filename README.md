@@ -2,7 +2,7 @@
 ## Tạo service
 ```
 sudo nano /etc/systemd/system/myapp.service
-
+```
 ## Nội dung file myapp.service
 ```
 [Unit]
