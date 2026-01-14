@@ -1,4 +1,9 @@
 # SEVT_Parking_In
+## Tạo service
+```
+sudo nano /etc/systemd/system/myapp.service
+
+## Nội dung file myapp.service
 ```
 [Unit]
 Description=My Python Script Service
@@ -16,4 +21,9 @@ StartLimitIntervalSec=0
 [Install]
 WantedBy=multi-user.target
 
+## Lưu lại
+```
+sudo systemctl daemon-reload          # Nạp lại danh sách service
+sudo systemctl enable myapp # Tự chạy khi boot
+sudo systemctl start myapp  # Chạy ngay
 
