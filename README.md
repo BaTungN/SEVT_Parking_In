@@ -34,6 +34,7 @@ journalctl -u myapp -f
 ```
 sudo apt update
 sudo apt install python3-venv -y
+```
 ## Tạo môi trường ảo
 ```
 python3 -m venv myenv --system-site-packages
