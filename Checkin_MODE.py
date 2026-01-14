@@ -96,14 +96,14 @@ in_ok = "NO"
 out_ok = "NO"
 data_send = ""
 def load_aes_key_iv():
-    with open('/home/meg/Carparking_SEVT/Keys/aes_key_iv.json') as f:
+    with open('/home/meg/SEVT_Parking_In/Keys/aes_key_iv.json') as f:
         data = json.load(f)
     key = base64.b64decode(data['key'])
     return key
-with open("/home/meg/Carparking_SEVT/Keys/public_key.pem", "r") as f:
+with open("/home/meg/SEVT_Parking_In/Keys/public_key.pem", "r") as f:
     public_key = f.read()
 
-with open("/home/meg/Carparking_SEVT/Keys/private_key.pem", "r") as f:
+with open("/home/meg/SEVT_Parking_In/Keys/private_key.pem", "r") as f:
     private_key = f.read()
 def hash_sha256(data: str) -> bytes:
     return hashlib.sha256(data.encode('utf-8')).digest()
