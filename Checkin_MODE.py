@@ -342,7 +342,7 @@ def thread_checkin(com, baudrate):
 current_tag=None
 last_seen=0
 last_action=0
-timeout=0
+timeout=1
 timedelay_btw=2
 state="IDLE"
 isSerial = False
