@@ -188,24 +188,46 @@ class ControlCar:
             #     "car_parked": True
             # })
             try:
+                # pipeline = [
+                #     {
+                #         "$match": {
+                #             "name_parking": self.NameParking,
+                #             "checkin_time": {"$ne": None},
+                #             "checkout_time": None,
+                #             "status_in":"valid"
+                #         }
+                #     },
+                #     {"$sort": {"checkin_time": -1}},
+                #     {
+                #         "$group": {
+                #             "_id": "$id_card.sha",
+                #             "latest_log": {"$first": "$$ROOT"}
+                #         }
+                #     },
+                #     {"$count": "total"}
+                # ]
                 pipeline = [
-                    {
-                        "$match": {
-                            "name_parking": self.NameParking,
-                            "checkin_time": {"$ne": None},
-                            "checkout_time": None,
-                            "status_in":"valid"
-                        }
-                    },
-                    {"$sort": {"checkin_time": -1}},
-                    {
-                        "$group": {
-                            "_id": "$id_card.sha",
-                            "latest_log": {"$first": "$$ROOT"}
-                        }
-                    },
-                    {"$count": "total"}
-                ]
+                {
+                    "$match": {
+                        "name_parking": "1",
+                        "status_in": "valid"
+                    }
+                },
+                {"$sort": {"checkin_time": -1}},
+                {
+                    "$group": {
+                        "_id": "$id_card.sha",
+                        "latest_log": {"$first": "$$ROOT"}
+                    }
+                },
+                {
+                    "$match": {
+                        "latest_log.checkin_time": {"$ne": None},
+                        "latest_log.checkout_time": None
+                    }
+                },
+                {"$count": "total"}
+            ]
                 result_pip = list(self.entry_logs.aggregate(pipeline))
                 count = result_pip[0]["total"] if result_pip else 0
                 logging.info("========****DATA RAW: {} ****========".format(count))
