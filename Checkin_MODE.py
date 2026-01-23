@@ -182,7 +182,7 @@ class ControlCar:
                     {"id_card.sha": hash_sha256(id_card)},
                     {"$set": {
                         "checkin_status": state
-                    }}, upsert=True)
+                    }}, upsert=False)
             # count = self.vehicles.count_documents({
             #     "name_parking": self.NameParking,
             #     "car_parked": True
