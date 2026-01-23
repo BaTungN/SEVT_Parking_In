@@ -209,7 +209,7 @@ class ControlCar:
                 pipeline = [
                 {
                     "$match": {
-                        "name_parking": "1",
+                        "name_parking": self.NameParking,
                         "status_in": "valid"
                     }
                 },
