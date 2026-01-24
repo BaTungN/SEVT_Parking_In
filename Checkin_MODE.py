@@ -24,7 +24,7 @@ import queue
 # for pin in gpio_pins:
 #     GPIO.output(pin, GPIO.HIGH)
 
-gpio_on=False
+
 # def cleanup_gpio():
 #     print("Chương trình kết thúc, cleanup GPIO...")
 #     GPIO.cleanup()
@@ -190,46 +190,47 @@ class ControlCar:
             #     "car_parked": True
             # })
             try:
-                # pipeline = [
-                #     {
-                #         "$match": {
-                #             "name_parking": self.NameParking,
-                #             "checkin_time": {"$ne": None},
-                #             "checkout_time": None,
-                #             "status_in":"valid"
-                #         }
-                #     },
-                #     {"$sort": {"checkin_time": -1}},
-                #     {
-                #         "$group": {
-                #             "_id": "$id_card.sha",
-                #             "latest_log": {"$first": "$$ROOT"}
-                #         }
-                #     },
-                #     {"$count": "total"}
-                # ]
+                #pipeline = [
+                #    {
+                #        "$match": {
+                #            "name_parking": self.NameParking,
+                #            "checkin_time": {"$ne": None},
+                #            "checkout_time": None,
+                #            "status_in":"valid"
+                #        }
+                #    },
+                #    {"$sort": {"checkin_time": -1}},
+                #    {
+                #        "$group": {
+                #            "_id": "$id_card.sha",
+                #            "latest_log": {"$first": "$$ROOT"}
+                #        }
+                #    },
+                #    {"$count": "total"}
+                #]
                 pipeline = [
+                    {
+                        "$match": {
+                            "name_parking": self.NameParking,
+                           "status_in": "valid"
+                        }
+                    },
+                    {"$sort": {"checkin_time": -1}},
+                    {
+                        "$group": {
+                            "_id": "$id_card.sha",
+                            "latest_log": {"$first": "$$ROOT"}
+                        }
+                    },
                 {
-                    "$match": {
-                        "name_parking": self.NameParking,
-                        "status_in": "valid"
-                    }
-                },
-                {"$sort": {"checkin_time": -1}},
-                {
-                    "$group": {
-                        "_id": "$id_card.sha",
-                        "latest_log": {"$first": "$$ROOT"}
-                    }
-                },
-                {
-                    "$match": {
-                        "latest_log.checkin_time": {"$ne": None},
-                        "latest_log.checkout_time": None
-                    }
-                },
-                {"$count": "total"}
-            ]
+                "$match": {
+                            "latest_log.checkin_time": {"$ne": None},
+                           "latest_log.checkout_time": None
+                        }
+                 },
+                    {"$count": "total"}
+                ]
+                
                 result_pip = list(self.entry_logs.aggregate(pipeline))
                 count = result_pip[0]["total"] if result_pip else 0
                 logging.info("========****DATA RAW: {} ****========".format(count))
@@ -348,8 +349,15 @@ def thread_checkin(com, baudrate):
                         if gpio_on==False:
                             on_pin()
                         logging.info("ID nhan duoc: {}".format(data))
-                        checkin = ControlCar(nameparking=_name_parking, checktime_set=45)
-                        checkin.checkin_car(data)
+                        try:
+                            checkin = ControlCar(nameparking=_name_parking, checktime_set=45)
+                            checkin.checkin_car(data)
+                        except:
+                            with open("cache_collection.json", "r", encoding="utf-8") as f:
+                                offline_data = json.load(f, object_hook=json_util.object_hook)
+                            for off in offline_data:
+                                if aesUtil.decrypt(off["id_card"]["aes"])== data:
+                                    on_pin()
                         id_in_temp = data_check
                         time.sleep(0.5)
                         if gpio_on==True:
@@ -454,7 +462,6 @@ def main():
                                             if off["id_card"]["sha"] == hash_sha256(tag) and off["name_parking"] ==_name_parking and off["type_card"]["sha"] == hash_sha256("vetc"):
                                                 check=True
                                                 on_pin()
-                                
                                 current_tag=tag
                                 last_seen=now
                                 last_action=now
@@ -466,8 +473,6 @@ def main():
     except Exception as ex:
         print("FAIL COM")
                 
-#====================================================================================
-#====================================================================================
 #====================================================================================
 #==========================      AUTO BACKUP      ===================================
 #====================================================================================
@@ -509,9 +514,17 @@ def _main():
     thread2 = threading.Thread(target=backup)
     # thread = threading.Thread(target=thread_checkin, args=("COM1", 9600))
     thread2.start()
+
 if __name__ == '__main__':
     # main_oneway("/dev/ttyUSB0", 57600)
   
     main()
+    # while(True):
+
+    #     on_pin()
+    #     time.sleep(15)
+    #     off_pin()
+    #     time.sleep(10)
+
     # GPIO.cleanup()
 
