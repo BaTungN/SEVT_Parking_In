@@ -130,9 +130,10 @@ class ControlCar:
 
             print("connected")
         except Exception as e:
-            self.open_barrier()
+            #self.open_barrier()
             connected = False
             logging.error("KHONG THE KET NOI VOI SERVER: {}".format(e))
+            raise
         # self.ImportLog=ImportLogs(nameparking)
     # **********************************************************
     # ================== BAT TAT BARRIER =======================
@@ -264,14 +265,16 @@ class ControlCar:
                     if vehicle:
                         id_car_check=_id_car_check
             except:
-                self.open_barrier()
+                #self.open_barrier()
                 logging.error("KHONG THE KET NOI SERVER! \n ID Card vao: {}".format(id_car_check))
+                raise
             try:
                 if vehicle is None:
                     vehicle = self.vehicles.find_one({"id_card.sha": hash_sha256(id_car_check),"name_parking": self.NameParking})
             except:
-                self.open_barrier()
+                #self.open_barrier()
                 logging.error("KHONG THE KET NOI SERVER! \n ID Card vao: {}".format(id_car_check))
+                raise
             if not vehicle:
                 self.save_data( id_card=id_car_check, checkin_time=datetimee, checkout_time=None, status="invalid")
                 logging.info("Xe khong ton tai trong he thong!")
