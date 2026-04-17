@@ -9,6 +9,8 @@ import time
 from ExtensionCls.MongoDB import MongoDB
 from ExtensionCls.IsCheckTime import IsCheckTime
 import json,base64
+from bson import json_util
+import os
 import atexit
 import time
 from Tesncryption.AsymmetricEncryption import AsymmetricEncryption,AESUtil
@@ -252,9 +254,9 @@ class ControlCar:
             global in_ok, out_ok
             datetimee = datetime.now(timezone.utc)
             is_parking_available, slots = self.is_parking_available()
-            if not is_parking_available:
-                logging.info("Bai xe {} da day".format(self.NameParking))
-                self.save_data( id_card=id_car_check, checkin_time=datetimee, checkout_time=None, status="full")
+            # if not is_parking_available:
+            #     logging.info("Bai xe {} da day".format(self.NameParking))
+            #     self.save_data( id_card=id_car_check, checkin_time=datetimee, checkout_time=None, status="full")
                 # return
             logging.info("Bai xe con trong: {} cho".format(slots))
             
@@ -376,7 +378,7 @@ def thread_checkin(com, baudrate):
 current_tag=None
 last_seen=0
 last_action=0
-timeout=1
+timeout=1.5
 timedelay_btw=2
 state="IDLE"
 isSerial = False
@@ -470,6 +472,7 @@ def main():
                 except Exception as e:
 
                     logging.error("LOI XU LY CHECKIN: {}".format(e))
+            schedule.run_pending()
     except Exception as ex:
         print("FAIL COM")
                 
@@ -481,9 +484,8 @@ def backup_collection():
     DB_NAME = configs['server']['db_name']
     BACKUP_FILE = "./backup.json"   
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
-        vehicles = db["EmployeeParking"]
+        MongoDBServer = MongoDB(uri=ServerUri, db_name=DBname)
+        vehicles = MongoDBServer.get_collection("EmployeeParking")
         data = list(vehicles.find({}))
 
         tmp_file = "cache_collection.json.tmp"
@@ -493,10 +495,10 @@ def backup_collection():
 
         os.replace(tmp_file, "cache_collection.json")
 
-        print(f"? Backup OK [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]")
+        logging.info(f"? Backup OK [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]")
 
     except Exception as e:
-        print(f"? Backup loii: {e}")
+        logging.info(f"? Backup loii: {e}")
 schedule.every().day.at("00:00").do(backup_collection)
 schedule.every().day.at("17:00").do(backup_collection)
 # ===== LOOP CH?Y N?N =====
@@ -508,7 +510,7 @@ def backup():
 #====================================================================================
 def _main():
     
-    thread = threading.Thread(target=thread_checkin, args=(port_name, baudrate))
+    thread = threading.Thread(target=main)
     # thread = threading.Thread(target=thread_checkin, args=("COM1", 9600))
     thread.start()
     thread2 = threading.Thread(target=backup)
@@ -518,7 +520,7 @@ def _main():
 if __name__ == '__main__':
     # main_oneway("/dev/ttyUSB0", 57600)
   
-    main()
+    _main()
     # while(True):
 
     #     on_pin()
