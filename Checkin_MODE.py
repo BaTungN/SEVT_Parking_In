@@ -14,6 +14,8 @@ import os
 import atexit
 import time
 from Tesncryption.AsymmetricEncryption import AsymmetricEncryption,AESUtil
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
 import hashlib
 import RPi.GPIO as GPIO
 from collections import deque
@@ -88,13 +90,31 @@ _name_parking = configs['name_parking']
 ServerUri = configs['server']['uri']
 DBname = configs['server']['db_name']
 # log_filename = "Logs/Car_parking.log"
-log_filename = "Car_parking.log"
-logging.basicConfig(
-    filename=log_filename,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+
+BASE_DIR = Path(__file__).parent
+LOG_DIR = BASE_DIR / "Logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+handler = TimedRotatingFileHandler(
+    str(LOG_DIR / "Car_parking.log"),
+    when="midnight",
+    interval=1,
+    backupCount=30,
     encoding="utf-8"
 )
+logging.basicConfig(
+    handlers=[handler],
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+# log_filename = f"Car_parking{datetime.now}.log"
+# logging.basicConfig(
+#     filename=log_filename,
+#     level=logging.INFO,
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+#     encoding="utf-8"
+# )
 in_ok = "NO"
 out_ok = "NO"
 data_send = ""
@@ -378,7 +398,7 @@ def thread_checkin(com, baudrate):
 current_tag=None
 last_seen=0
 last_action=0
-timeout=1.5
+timeout=1
 timedelay_btw=2
 state="IDLE"
 isSerial = False
