@@ -102,6 +102,8 @@ handler = TimedRotatingFileHandler(
     backupCount=30,
     encoding="utf-8"
 )
+handler.suffix = "%Y-%m-%d"
+handler.namer = lambda name: name.replace(".log.", "_") + ".log"
 logging.basicConfig(
     handlers=[handler],
     level=logging.INFO,
