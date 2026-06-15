@@ -102,14 +102,21 @@ handler = TimedRotatingFileHandler(
     backupCount=30,
     encoding="utf-8"
 )
+
 handler.suffix = "%Y-%m-%d"
-handler.namer = lambda name: name.replace(".log.", "_") + ".log"
+
+def namer(name):
+    # name = Car_parking.log.2026-06-15
+    base, date = name.rsplit(".log.", 1)
+    return f"{base}_{date}.log"
+
+handler.namer = namer
+
 logging.basicConfig(
     handlers=[handler],
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
 # log_filename = f"Car_parking{datetime.now}.log"
 # logging.basicConfig(
 #     filename=log_filename,
