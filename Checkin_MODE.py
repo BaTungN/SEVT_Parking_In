@@ -205,7 +205,7 @@ class ControlCar:
                     "aes": aesUtil.encrypt(id_card),
                     "sha": hash_sha256(id_card)
                 },
-                "name_parking": "1-A",
+                "name_parking": "3-B",
                 "checkin_time": checkin_time,
                 "checkout_time": checkout_time,
                 "status_in":status
@@ -243,7 +243,7 @@ class ControlCar:
                     {
                         "$match": {
                             "name_parking": {
-                                "$in": ["1-A", "1_B"]
+                                "$in": ["3-A", "3-B"]
                             },
                            "status_in": "valid"
                         }
