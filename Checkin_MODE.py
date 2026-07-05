@@ -141,7 +141,7 @@ def hash_sha256(data: str) -> bytes:
     return hashlib.sha256(data.encode('utf-8')).digest()
 key_aes= load_aes_key_iv()
 aesUtil = AESUtil(key=key_aes)
-
+data_ex=["3416214B88AA870007728949","3416214B889B000000776852","A1077472","A10D6192"]
 class ControlCar:
     NameParking = '1'
     connected = True
@@ -205,7 +205,7 @@ class ControlCar:
                     "aes": aesUtil.encrypt(id_card),
                     "sha": hash_sha256(id_card)
                 },
-                "name_parking": self.NameParking,
+                "name_parking": "1-A",
                 "checkin_time": checkin_time,
                 "checkout_time": checkout_time,
                 "status_in":status
@@ -242,7 +242,9 @@ class ControlCar:
                 pipeline = [
                     {
                         "$match": {
-                            "name_parking": self.NameParking,
+                            "name_parking": {
+                                "$in": ["1-A", "1_B"]
+                            },
                            "status_in": "valid"
                         }
                     },
@@ -290,12 +292,14 @@ class ControlCar:
             logging.info("Bai xe con trong: {} cho".format(slots))
             
             vehicle=None
+            
+            
             try:
                 if vehicle is None:
                     _id_car_check=id_car_check[-8:]
                     vehicle = self.vehicles.find_one({"id_card.sha": hash_sha256(_id_car_check),"type_card.sha": hash_sha256("epass"), "name_parking": self.NameParking})
                     if vehicle:
-                        id_car_check=_id_car_check
+                        id_car_check=_id_car_check 
             except:
                 #self.open_barrier()
                 logging.error("KHONG THE KET NOI SERVER! \n ID Card vao: {}".format(id_car_check))
@@ -308,6 +312,10 @@ class ControlCar:
                 logging.error("KHONG THE KET NOI SERVER! \n ID Card vao: {}".format(id_car_check))
                 raise
             if not vehicle:
+                if id_car_check[-8:] in data_ex or id_car_check in data_ex:
+                    self.open_barrier()
+                    logging.info("EX++++")
+                    return
                 self.save_data( id_card=id_car_check, checkin_time=datetimee, checkout_time=None, status="invalid")
                 logging.info("Xe khong ton tai trong he thong!")
                 
@@ -407,7 +415,7 @@ def thread_checkin(com, baudrate):
 current_tag=None
 last_seen=0
 last_action=0
-timeout=1
+timeout=1.5
 timedelay_btw=2
 state="IDLE"
 isSerial = False
@@ -461,6 +469,10 @@ def main():
                                             if off["id_card"]["sha"] == hash_sha256(tag) and off["name_parking"] ==_name_parking and off["type_card"]["sha"] == hash_sha256("vetc"):
                                                 check=True
                                                 on_pin()
+                                    if check == False:
+                                        if tag[-8:] in data_ex or tag in data_ex:
+                                            check =True
+                                            on_pin()
                                 state ="CARD_HELD"
                                 last_seen = now
                         elif state =="CARD_HELD":
